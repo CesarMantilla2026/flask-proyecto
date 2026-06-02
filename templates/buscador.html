@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Buscador de Productos</title>
+    <style>
+        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; margin: 0; }
+        .card { width: 100%; max-width: 550px; padding: 30px; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); box-sizing: border-box; }
+        h3 { text-align: center; color: #202124; margin: 0 0 5px 0; }
+        .info-top { font-size: 13px; color: #70757a; text-align: center; margin-bottom: 20px; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 25px; }
+        input { flex: 1; padding: 12px; border-radius: 6px; border: 1px solid #dadce0; font-size: 15px; }
+        button { padding: 12px 24px; background-color: #1a73e8; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .result-card { padding: 20px; background-color: #e6f4ea; border: 1px solid #ceead6; color: #137333; border-radius: 8px; margin-bottom: 25px; display: none; }
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; color: #202124; margin-top: 10px; }
+        .error-card { padding: 12px; background-color: #fce8e6; color: #c5221f; border-radius: 6px; margin-bottom: 25px; text-align: center; display: none; }
+        .btn-back { display: block; width: 100%; padding: 11px; background: #ffffff; color: #5f6368; text-decoration: none; border: 1px solid #dadce0; border-radius: 6px; text-align: center; font-weight: 600; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h3>Módulo Buscador de Productos</h3>
+        <p class="info-top">Códigos de prueba: <b>P001</b>, <b>P002</b>, <b>P003</b></p>
+        
+        <div class="search-box">
+            <input type="text" id="codigoInput" placeholder="Ej: P001">
+            <button onclick="buscar()">Buscar</button>
+        </div>
+
+        <div id="boxResultado" class="result-card">
+            <b style="font-size: 16px;">📦 Datos del Producto:</b>
+            <div class="result-grid">
+                <div><b>Código:</b> <span id="resCodigo"></span></div>
+                <div><b>Nombre:</b> <span id="resNombre"></span></div>
+                <div><b>Precio:</b> S/. <span id="resPrecio"></span></div>
+                <div><b>Stock:</b> <span id="resStock"></span> u.</div>
+            </div>
+            <p style="margin: 10px 0 0 0; font-size: 14px; color: #5f6368;"><span id="resDesc"></span></p>
+        </div>
+
+        <div id="boxError" class="error-card"></div>
+
+        <a href="/principal" class="btn-back">⬅️ Regresar al Panel Principal</a>
+    </div>
+
+    <script>
+        async function buscar() {
+            const codigo = document.getElementById('codigoInput').value;
+            const boxResultado = document.getElementById('boxResultado');
+            const boxError = document.getElementById('boxError');
+            
+            boxResultado.style.display = 'none';
+            boxError.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/buscar_producto', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ codigo: codigo })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('resCodigo').innerText = data.codigo;
+                    document.getElementById('resNombre').innerText = data.nombre;
+                    document.getElementById('resPrecio').innerText = data.precio.toFixed(2);
+                    document.getElementById('resStock').innerText = data.stock;
+                    document.getElementById('resDesc').innerText = "Descripción: " + data.descripcion;
+                    boxResultado.style.display = 'block';
+                } else {
+                    boxError.innerText = "⚠️ " + (data.error || 'No encontrado');
+                    boxError.style.display = 'block';
+                }
+            } catch (err) {
+                boxError.innerText = "⚠️ Error de comunicación con el servidor.";
+                boxError.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
